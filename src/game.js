@@ -16,7 +16,7 @@ module.exports = class Game {
   set currentRoom(index) {
     const intIndex = parseInt(index)
 
-    if (intIndex > 0 && intIndex < this._game.rooms.length) {
+    if (intIndex >= 0 && intIndex < this._game.rooms.length) {
       this._currentRoom = intIndex
     } else {
       throw "Bad room index"

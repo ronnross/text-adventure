@@ -1,26 +1,48 @@
 const stdin = process.openStdin()
+const inquirer = require('inquirer');
 const gameDef = require('./adventure.json')
 const Game = require('./game')
+const quitCmd = 'Quit'
+
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time))
+}
 
 const gameState = new Game(gameDef)
+let exitGame = false;
 
 console.log(gameState.title)
-console.log(gameState.currentRoom.description)
-console.log(gameState.currentExits)
 
-console.log("Where would you like to go? ")
-stdin.addListener("data", function(d) {
-    const command = d.toString().trim()
-    if (command.toLowerCase() === "exit") {
-        stdin.removeAllListeners('data')
-        process.exit(0)
-    } else {
-        try {
-            gameState.followExit(parseInt(command))
-        } catch (error) {
-            console.log('I did not understand that')
-        }
-        console.log(gameState.currentRoom.description)
-        console.log(gameState.currentExits)
+function processCommandStep() {
+  console.log('\n\n')
+  console.log(gameState.currentRoom.description)
+  const choices = gameState.currentExits.map((name, idx) => {
+    return {
+      name,
+      value: idx
     }
-})
+  })
+
+  inquirer.prompt([{
+    type: "list",
+    name: "command",
+    message: "Where would you like to go?",
+    choices: [...choices, new inquirer.Separator(), quitCmd]
+  }])
+  .then((response) => {
+    const command = response.command
+    console.log(command);
+    if (command === quitCmd) {
+      process.exit(0)
+    }
+
+    gameState.followExit(command)
+
+    setTimeout(processCommandStep, 0);
+  }).catch((error) => {
+    console.log("Um, what?!")
+    setTimeout(processCommandStep, 0)
+  })
+}
+
+processCommandStep();
