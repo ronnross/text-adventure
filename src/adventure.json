@@ -4,6 +4,7 @@
   "rooms": [
     {
       "description": "This is the first room",
+      "prompt": "Where would you like to go?",
       "exits": [
         {
           "name": "East",
@@ -17,9 +18,27 @@
     },
     {
       "description": "in the east room",
+      "prompt": "What would you like to do?",
       "exits": [
         {
-          "name": "West",
+          "name": "Go back west",
+          "idx": 0
+        },
+        {
+          "name": "Headbutt Wall",
+          "message": "Ouch!",
+          "player": {
+            "hp": -10
+          },
+          "idx": 1
+        }
+      ]
+    },
+    {
+      "description": "The west wing",
+      "exits": [
+        {
+          "name": "Flip Flop",
           "idx": 0
         }
       ]

@@ -91,3 +91,4 @@ test('throw error if setting currentRoom to a non-integer', (t) => {
         t.equal(error, "Bad room index")
     }
 })
+
