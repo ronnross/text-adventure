@@ -1,28 +1,16 @@
+
 module.exports = class Game {
-    constructor(title) {
-        this._title = title
-        this._currentRoom = 0
-        this._rooms = [
-            {
-                description: "This is the first room",
-                exits: [
-                    {name: "East", idx: 1},
-                    {name: "West", idx: 2}
-                ]
-            },
-            {
-                description: "in the east room",
-                exits: [{name: "West", idx: 0}]
-            }
-        ]
+    constructor(gameDef) {
+        this._game = gameDef
+        this._currentRoom = gameDef.startingRoom
     }
 
     get title() {
-        return this._title
+        return this._game.title
     }
 
     get currentRoom() {
-        return this._rooms[this._currentRoom]
+        return this._game.rooms[this._currentRoom]
     }
 
     set currentRoom(index) {

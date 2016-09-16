@@ -1,0 +1,28 @@
+{
+  "title": "My adventure",
+  "startingRoom": 0,
+  "rooms": [
+    {
+      "description": "This is the first room",
+      "exits": [
+        {
+          "name": "East",
+          "idx": 1
+        },
+        {
+          "name": "West",
+          "idx": 2
+        }
+      ]
+    },
+    {
+      "description": "in the east room",
+      "exits": [
+        {
+          "name": "West",
+          "idx": 0
+        }
+      ]
+    }
+  ]
+}
