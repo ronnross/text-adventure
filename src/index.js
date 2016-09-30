@@ -11,6 +11,7 @@ const namePrompt = {
 const initialGameState = {
   name: undefined,
   hp: 100,
+  maxHp: 100,
   currentRoom: gameDef.startingRoom,
   shouldQuit: false
 }
@@ -30,9 +31,10 @@ function buildRoomPrompt(gameState) {
 }
 
 function objMap(obj, cb) {
-  return Object.keys(obj).map((key) => {
-    return cb(key, obj[key])
-  })
+  return Object.keys(obj).reduce((acc, key) => {
+    acc[key] = cb(key, obj[key])
+    return acc
+  }, {})
 }
 
 //game
@@ -51,15 +53,27 @@ function applyPlayerChanges(gameState, playerChanges) {
     return gameState
   }
 
-  const attributesToChange = Object.keys(playerChanges);
-
-  for (var i = 0; i < attributesToChange.length; i ++) {
-    const attributeToChange = attributesToChange[i]
-    gameState[attributeToChange] += playerChanges[attributeToChange]
-  }
-
-  return gameState
+  return Object.assign({}, gameState, objMap(playerChanges, (key, value) => {
+    return gameState[key] + value
+  }))
 }
+
+function getPlayerStatus(gameState) {
+  const hpPerc = gameState.hp/gameState.maxHp
+
+  if (hpPerc > .75) {
+    return "you're feeling great"
+  } else if (hpPerc > .5) {
+    return "you're not feeling the best"
+  } else if (hpPerc > .25) {
+    return "you don't feel at all well"
+  } else if (hpPerc > 0) {
+    return "you had better sit down"
+  } else {
+    return "are you dead, or is this...Ohio?"
+  }
+}
+
 
 //engine
 function handleQuit(nothing, gameState) {
@@ -80,11 +94,8 @@ function handleRoomExit(index, gameState) {
   try {
     const selectedExit = getCurrentRoom(gameState).exits[index]
 
-    gameState = applyPlayerChanges(gameState, selectedExit.player)
-    gameState.currentRoom = selectedExit.idx
-
     return {
-      gameState,
+      gameState: Object.assign({}, gameState, applyPlayerChanges(gameState, selectedExit.player), {currentRoom: selectedExit.idx}),
       msgs: [selectedExit.message]
     }
   } catch (error) {
@@ -118,7 +129,7 @@ function getCommandHandler(promptResult) {
 }
 
 function promptUser(prompt, currGameState, ...msgs) {
-  msgs.forEach(inform)
+  [...msgs].forEach(inform)
 
   if (currGameState.shouldQuit) {
     process.exit(0)
@@ -130,10 +141,16 @@ function promptUser(prompt, currGameState, ...msgs) {
   .then(({handler, param}) => {
     const {gameState, msgs} = handler(param, currGameState)
 
-    promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined))
+    if (gameState.shouldQuit) {
+      promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined))
+    } else if (gameState.hp <= 0) {
+      promptUser(buildRoomPrompt(gameState), Object.assign({}, gameState, {shouldQuit: true}), ...msgs.filter((msg) => msg !== undefined), `${gameState.name}, ${getPlayerStatus(gameState)}`, '', 'Nope, you are dead', '', `Goodbye, ${gameState.name}.`)
+    } else {
+      promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined), '', '', getCurrentRoom(gameState).description, '-----', `${gameState.name}, ${getPlayerStatus(gameState)}`, '')
+    }
   })
   .catch((error) => {
-    promptUser(buildRoomPrompt(gameState), gameState, `Um, somthing bad happened! (${error})`)
+    promptUser(buildRoomPrompt(gameState), gameState, `Um, somthing bad happened! (${error})`, '', '', getCurrentRoom(gameState).description, '-----', `${gameState.name}, ${getPlayerStatus(gameState)}`, '')
   })
 }
 
