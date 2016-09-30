@@ -30,13 +30,9 @@ module.exports = class Game {
   }
 
   get currentExits() {
-    const exitNames = []
-
-    for (var i = 0; i < this.currentRoom.exits.length; i++) {
-      exitNames.push(this.currentRoom.exits[i].name)
-    }
-
-    return exitNames
+    return this.currentRoom.exits.map(({name}, idx) => {
+      return {name, value: idx}
+    })
   }
 
   applyPlayerChanges(playerChanges) {

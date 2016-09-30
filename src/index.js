@@ -1,70 +1,141 @@
 const stdin = process.openStdin()
 const inquirer = require('inquirer');
 const gameDef = require('./adventure.json')
-const Game = require('./game')
+
 const quitCmd = 'Quit'
-
-function sleep (time) {
-  return new Promise((resolve) => setTimeout(resolve, time))
-}
-
-const gameState = new Game(gameDef)
-let exitGame = false
-let pendingMessages = []
-
-console.log(gameState.title)
-
-inquirer.prompt([{
+const namePrompt = {
   type: 'input',
   name: 'name',
-  message: 'What is your name',
-}])
-  .then((response) => {
-    gameState.player.name = response.name
-    console.log(`Welcome, ${response.name}`)
-    processCommandStep()
-  })
+  message: 'What is your name?',
+}
+const initialGameState = {
+  name: undefined,
+  hp: 100,
+  currentRoom: gameDef.startingRoom,
+  shouldQuit: false
+}
 
-function processCommandStep() {
-  console.log('\n\n')
-  pendingMessages.forEach((msg) => {
-    console.log(msg)
-  })
-  pendingMessages = []
-  console.log(gameState.currentRoom.description)
-  const choices = gameState.currentExits.map((name, idx) => {
-    return {
-      name,
-      value: idx
-    }
-  })
+//generic
+const debug = (...args) => console.log('~~~~~~~~~~~~ DEBUG ', ...args)
 
-  console.log(`\n** ${gameState.player.name}, ${gameState.player.status} **\n`)
+const inform = (msg) => console.log(msg)
 
-  inquirer.prompt([{
+function buildRoomPrompt(gameState) {
+  return {
     type: 'list',
     name: 'command',
-    message: gameState.currentRoom.prompt || 'que?',
-    choices: [...choices, new inquirer.Separator(), quitCmd]
-  }])
-  .then((response) => {
-    const command = response.command
-    if ((command === quitCmd) || (gameState.player.hp <= 0)) {
-      if (gameState.player.hp <= 0) {
-        console.log('Nope...you are dead!')
-      }
-      console.log(`Goodbye, ${gameState.player.name}`)
-      process.exit(0)
-    }
+    message: getCurrentRoom(gameState).prompt || 'que?',
+    choices: [...getExitsForPrompt(gameState), new inquirer.Separator(), quitCmd]
+  }
+}
 
-    const exitMessage = gameState.followExit(command)
-    if (exitMessage) {
-      pendingMessages.push(exitMessage)
-    }
-
-    setTimeout(processCommandStep, 0)
-  }).catch((error) => {
-    console.log('Um, what?!', error)
-    setTimeout(processCommandStep, 0)
+function objMap(obj, cb) {
+  return Object.keys(obj).map((key) => {
+    return cb(key, obj[key])
   })
 }
+
+//game
+function getCurrentRoom(gameState) {
+  return gameDef.rooms[gameState.currentRoom]
+}
+
+function getExitsForPrompt(gameState) {
+  return getCurrentRoom(gameState).exits.map(({name}, idx) => {
+    return {name, value: idx}
+  })
+}
+
+function applyPlayerChanges(gameState, playerChanges) {
+  if (!playerChanges) {
+    return gameState
+  }
+
+  const attributesToChange = Object.keys(playerChanges);
+
+  for (var i = 0; i < attributesToChange.length; i ++) {
+    const attributeToChange = attributesToChange[i]
+    gameState[attributeToChange] += playerChanges[attributeToChange]
+  }
+
+  return gameState
+}
+
+//engine
+function handleQuit(nothing, gameState) {
+  return {
+    gameState: Object.assign({}, gameState, {shouldQuit: true}),
+    msgs: [`Goodbye, ${gameState.name}.`]
+  }
+}
+
+function handleNameChange(playerName, gameState) {
+  return {
+    gameState: Object.assign({}, gameState, {name: playerName}),
+    msgs: [`Welcome, ${playerName}!`]
+  }
+}
+
+function handleRoomExit(index, gameState) {
+  try {
+    const selectedExit = getCurrentRoom(gameState).exits[index]
+
+    gameState = applyPlayerChanges(gameState, selectedExit.player)
+    gameState.currentRoom = selectedExit.idx
+
+    return {
+      gameState,
+      msgs: [selectedExit.message]
+    }
+  } catch (error) {
+    throw "Bad exit index " + error
+  }
+}
+
+function getCommandHandler(promptResult) {
+  if (promptResult.name) {
+    return {
+      handler: handleNameChange,
+      param: promptResult.name
+    }
+  } else if (promptResult.command !== undefined) {
+    if (promptResult.command === quitCmd) {
+      return {
+        handler: handleQuit,
+        param: ''
+      }
+    } else {
+      return {
+        handler: handleRoomExit,
+        param: promptResult.command
+      }
+    }
+  }
+  return {
+    handler: () => {},
+    param: 'No clue'
+  }
+}
+
+function promptUser(prompt, currGameState, ...msgs) {
+  msgs.forEach(inform)
+
+  if (currGameState.shouldQuit) {
+    process.exit(0)
+  }
+
+  inquirer
+  .prompt([prompt])
+  .then(getCommandHandler)
+  .then(({handler, param}) => {
+    const {gameState, msgs} = handler(param, currGameState)
+
+    promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined))
+  })
+  .catch((error) => {
+    promptUser(buildRoomPrompt(gameState), gameState, `Um, somthing bad happened! (${error})`)
+  })
+}
+
+//setup game
+promptUser(namePrompt, initialGameState, `********${gameDef.title}******`)
