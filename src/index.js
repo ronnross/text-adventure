@@ -74,7 +74,6 @@ function getPlayerStatus(gameState) {
   }
 }
 
-
 //engine
 function handleQuit(nothing, gameState) {
   return {
@@ -101,6 +100,32 @@ function handleRoomExit(index, gameState) {
   } catch (error) {
     throw "Bad exit index " + error
   }
+}
+
+function exitOnZeroHP({gameState, msgs}) {
+  return {
+    gameState: Object.assign({}, gameState, {shouldQuit: gameState.hp <= 0 || gameState.shouldQuit}),
+    msgs: msgs
+  }
+}
+
+function addPromptMessages({gameState, msgs}) {
+  if (gameState.hp <= 0) {
+    return {
+      gameState,
+      msgs: [...msgs, `${gameState.name}, ${getPlayerStatus(gameState)}`, '', 'Nope, you are dead', '', `Goodbye, ${gameState.name}.`]
+    }
+  } else if (!gameState.shouldQuit) {
+    return {
+      gameState,
+      msgs: [...msgs, '', '', getCurrentRoom(gameState).description, '-----', `${gameState.name}, ${getPlayerStatus(gameState)}`, '']
+    }
+  }
+
+  return {
+    gameState,
+    msgs
+  }   
 }
 
 function getCommandHandler(promptResult) {
@@ -139,15 +164,9 @@ function promptUser(prompt, currGameState, ...msgs) {
   .prompt([prompt])
   .then(getCommandHandler)
   .then(({handler, param}) => {
-    const {gameState, msgs} = handler(param, currGameState)
+    const {gameState, msgs} = addPromptMessages(exitOnZeroHP(handler(param, currGameState)))
 
-    if (gameState.shouldQuit) {
-      promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined))
-    } else if (gameState.hp <= 0) {
-      promptUser(buildRoomPrompt(gameState), Object.assign({}, gameState, {shouldQuit: true}), ...msgs.filter((msg) => msg !== undefined), `${gameState.name}, ${getPlayerStatus(gameState)}`, '', 'Nope, you are dead', '', `Goodbye, ${gameState.name}.`)
-    } else {
-      promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined), '', '', getCurrentRoom(gameState).description, '-----', `${gameState.name}, ${getPlayerStatus(gameState)}`, '')
-    }
+    promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined))
   })
   .catch((error) => {
     promptUser(buildRoomPrompt(gameState), gameState, `Um, somthing bad happened! (${error})`, '', '', getCurrentRoom(gameState).description, '-----', `${gameState.name}, ${getPlayerStatus(gameState)}`, '')
