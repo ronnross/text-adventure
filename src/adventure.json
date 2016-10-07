@@ -1,6 +1,6 @@
 {
   "title": "My adventure",
-  "startingRoom": 0,
+  "startingRoom": 2,
   "rooms": [
     {
       "description": "This is the first room",
@@ -35,11 +35,166 @@
       ]
     },
     {
-      "description": "The west wing",
+      "description": "You wake up feeling groggy. You find you are laying atop an unfamiliar bed in an unfamiliar room. From where you lay you see a desk, a rug and a menacing machine with blinking lights.",
       "exits": [
         {
-          "name": "Flip Flop",
-          "idx": 0
+          "name": "Look in desk",
+          "message": "You squint your eyes as hard as you can, but your x-ray vision spontaneously fails to start working again. Maybe you should get out of bed first.",
+          "idx": 2
+        },
+        {
+          "name": "Look under rug",
+          "message": "You strain your incipient esp but the rug just won't move. Maybe you should get out of bed first.",
+          "idx": 2
+        },
+        {
+          "name": "Look at device",
+          "message": "It sure is menacing. Maybe if you get out bed you can get a better look at it.",
+          "idx": 2
+        },
+        {
+          "name": "Get out of bed",
+          "message": "You're a little wobbly, but you manage to stand. Just...",
+          "idx": 3
+        }
+      ]
+    },
+    {
+      "description": "From where you stand, that machine looks even more menacing, like maybe it's thinking dark thoughts. The desk and rug look less worrying.",
+      "exits": [
+        {
+          "name": "Look in desk",
+          "message": "You open the drawer and see a pair of wire cutters. Thinking they may be useful, you steal...er, borrow them",
+          "idx": 4
+        },
+        {
+          "name": "Look under rug",
+          "message": "You're vaguely dissapointed to see only a small burrow of dust bunnies, which you carefully cover back up.",
+          "idx": 3
+        },
+        {
+          "name": "Look at device",
+          "message": "Well, the fact that it's a bomb explains the menacing air pretty well.",
+          "idx": 5
+        }
+      ]
+    },
+    {
+      "description": "From where you stand, that machine looks even more menacing, like maybe it's thinking dark thoughts. The desk and rug look less worrying. The wire cutters dig into your hip a little.",
+      "exits": [
+        {
+          "name": "Look in desk",
+          "message": "You open the drawer wishing there was something more useful to find",
+          "idx": 4
+        },
+        {
+          "name": "Look under rug",
+          "message": "You're vaguely dissapointed to see only a small burrow of dust bunnies, which you carefully cover back up.",
+          "idx": 4
+        },
+        {
+          "name": "Look at device",
+          "message": "Well, the fact that it's a bomb explains the menacing air pretty well.",
+          "idx": 6
+        }
+      ]
+    },
+    {
+      "description": "You stand as far away from the bomb as you can, but even from here you can see three wires. One red, one blue and one polka-dotted. The desk and the rug don't garner much attention at this point.",
+      "exits": [
+        {
+          "name": "Look in desk",
+          "message": "You open the drawer and see a pair of wire cutters. Thinking they may be useful, you steal...er, borrow them",
+          "idx": 6
+        },
+        {
+          "name": "Look under rug",
+          "message": "You're vaguely dissapointed to see only a small burrow of dust bunnies, which you carefully cover back up.",
+          "idx": 5
+        },
+        {
+          "name": "Look at bomb",
+          "message": "No matter how many times you try the bomb refuses to be anything else.",
+          "idx": 5
+        },
+        {
+          "name": "Cut red wire",
+          "message": "Not having anything to cut the wire with, you grab it and bite through the wire. Being electrocuted means you no longer have to worry about the bomb going off.",
+          "player": {
+            "hp": -100
+          },
+          "idx": 5
+        },
+        {
+          "name": "Cut blue wire",
+          "message": "Not having anything to cut the wire with, you grab it and bite through the wire. Being electrocuted means you no longer have to worry about the bomb going off.",
+          "player": {
+            "hp": -100
+          },
+          "idx": 5
+        },
+        {
+          "name": "Cut polka-dotted wire",
+          "message": "Not having anything to cut the wire with, you grab it and bite through the wire. Being electrocuted means you no longer have to worry about the bomb going off.",
+          "player": {
+            "hp": -100
+          },
+          "idx": 5
+        }
+      ]
+    },
+    {
+      "description": "You stand as far away from the bomb as you can, but even from here you can see three wires. One red, one blue and one polka-dotted. The desk and the rug don't garner much attention at this point. \n\nHmmmm, wire cutters and a bomb with three wires. I feel like I've seen this movie before.",
+      "exits": [
+        {
+          "name": "Look in desk",
+          "message": "You open the drawer wishing there was something more useful to find",
+          "idx": 6
+        },
+        {
+          "name": "Look under rug",
+          "message": "You're vaguely dissapointed to see only a small burrow of dust bunnies, which you carefully cover back up.",
+          "idx": 6
+        },
+        {
+          "name": "Look at bomb",
+          "message": "No matter how many times you try the bomb refuses to be anything else.",
+          "idx": 6
+        },
+        {
+          "name": "Cut red wire",
+          "message": "Suddenly the bomb starts beeping alarmingly. Then it starts beeping frighteningly. Then it stops...which is worse. Finally, with a sad pop, it opens up to display a sign: 'Just Kidding!'",
+          "idx": 7
+        },
+        {
+          "name": "Cut blue wire",
+          "message": "Suddenly the bomb starts beeping alarmingly. Then it starts beeping frighteningly. Then it stops...which is worse. Finally, with a sad pop, it opens up to display a sign: 'Just Kidding!'",
+          "idx": 7
+        },
+        {
+          "name": "Cut polka-dotted wire",
+          "message": "Suddenly the bomb starts beeping alarmingly. Then it starts beeping frighteningly. Then it stops...which is worse. Finally, with a sad pop, it opens up to display a sign: 'Just Kidding!'",
+          "idx": 7
+        }
+      ]
+    },
+    {
+      "description": "Congratulations! You won! Don't spend all your newly earned notoriety in one place!",
+      "exits": [
+        {
+          "name": "Look in desk",
+          "message": "Did you expect something to magically appear? You won, go home.",
+          "idx": 7
+        },
+        {
+          "name": "Look under rug",
+          "message": "Amazing! You have never seen anything like it before! Except all the other times you looked under the rug at the dust bunnies.",
+          "idx": 7
+        },
+        {
+          "name": "Look at bomb",
+          "message": "Man, when you find the joker that did this...",
+          "idx": 7
         }
       ]
     }
