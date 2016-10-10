@@ -19,6 +19,20 @@ const initialGameState = {
 //generic
 const debug = (...args) => console.log('~~~~~~~~~~~~ DEBUG ', ...args)
 
+function compose() {
+  const funcArgs = arguments
+
+  return function() {
+    let idx = funcArgs.length - 1
+    let result = funcArgs[idx].apply(this, arguments)
+
+    while(idx--) {
+      result = funcArgs[idx].call(this, result)
+    }
+    return result
+  }
+}
+
 const inform = (msg) => console.log(msg)
 
 function buildRoomPrompt(gameState) {
@@ -125,7 +139,7 @@ function addPromptMessages({gameState, msgs}) {
   return {
     gameState,
     msgs
-  }   
+  }
 }
 
 function getCommandHandler(promptResult) {
@@ -164,12 +178,17 @@ function promptUser(prompt, currGameState, ...msgs) {
   .prompt([prompt])
   .then(getCommandHandler)
   .then(({handler, param}) => {
-    const {gameState, msgs} = addPromptMessages(exitOnZeroHP(handler(param, currGameState)))
+    const {gameState, msgs} = compose(
+      addPromptMessages,
+      exitOnZeroHP,
+      handler
+    )(param, currGameState)
 
     promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined))
   })
   .catch((error) => {
-    promptUser(buildRoomPrompt(gameState), gameState, `Um, somthing bad happened! (${error})`, '', '', getCurrentRoom(gameState).description, '-----', `${gameState.name}, ${getPlayerStatus(gameState)}`, '')
+    const {gameState, msgs} = addPromptMessages({ gameState: currGameState, msgs: [`Um, somthing bad happened! (${error})`]})
+    promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined))
   })
 }
 
