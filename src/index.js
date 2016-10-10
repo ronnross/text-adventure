@@ -4,6 +4,28 @@ const gameDef = require('./adventure.json')
 const Game = require('./game')
 const quitCmd = 'Quit'
 
+const initialPlayerState = {
+  name: undefined,
+  hp: 100,
+  maxHp: 100
+}
+
+function getPlayerStatus(playerState) {
+  const hpPerc = playerState.hp / playerState.maxHp
+
+  if (hpPerc > .75) {
+    return "you're feeling great"
+  } else if (hpPerc > .5) {
+    return "you're not feeling the best"
+  } else if (hpPerc > .25) {
+    return "you don't feel at all well"
+  } else if (hpPerc > 0) {
+    return "you had better sit down"
+  } else {
+    return "are you dead, or is this...Ohio?"
+  }
+}
+
 function sleep (time) {
   return new Promise((resolve) => setTimeout(resolve, time))
 }
@@ -20,12 +42,18 @@ inquirer.prompt([{
   message: 'What is your name',
 }])
   .then((response) => {
-    gameState.player.name = response.name
+    const newPlayerState = Object.assign({}, initialPlayerState, {name: response.name})
     console.log(`Welcome, ${response.name}`)
-    processCommandStep()
+    processCommandStep(newPlayerState)
   })
 
-function processCommandStep() {
+function getProcessCommandStepRunner(playerState) {
+  return function runProcessCommandStep() {
+    processCommandStep(playerState)
+  }
+}
+
+function processCommandStep(playerState) {
   console.log('\n\n')
   pendingMessages.forEach((msg) => {
     console.log(msg)
@@ -39,7 +67,7 @@ function processCommandStep() {
     }
   })
 
-  console.log(`\n** ${gameState.player.name}, ${gameState.player.status} **\n`)
+  console.log(`\n** ${playerState.name}, ${getPlayerStatus(playerState)} **\n`)
 
   inquirer.prompt([{
     type: 'list',
@@ -49,22 +77,23 @@ function processCommandStep() {
   }])
   .then((response) => {
     const command = response.command
-    if ((command === quitCmd) || (gameState.player.hp <= 0)) {
-      if (gameState.player.hp <= 0) {
+    if ((command === quitCmd) || (playerState.hp <= 0)) {
+      if (playerState.hp <= 0) {
         console.log('Nope...you are dead!')
       }
-      console.log(`Goodbye, ${gameState.player.name}`)
+      console.log(`Goodbye, ${playerState.name}`)
       process.exit(0)
     }
 
-    const exitMessage = gameState.followExit(command)
+    const {exitMessage, newPlayerState} = gameState.followExit(command, playerState)
+
     if (exitMessage) {
       pendingMessages.push(exitMessage)
     }
 
-    setTimeout(processCommandStep, 0)
+    setTimeout(getProcessCommandStepRunner(newPlayerState), 0)
   }).catch((error) => {
     console.log('Um, what?!', error)
-    setTimeout(processCommandStep, 0)
+    setTimeout(getProcessCommandStepRunner(playerState), 0)
   })
 }

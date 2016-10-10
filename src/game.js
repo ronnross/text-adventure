@@ -1,14 +1,8 @@
-const Player = require('./player')
 
 module.exports = class Game {
   constructor(gameDef) {
     this._game = gameDef
     this._currentRoom = gameDef.startingRoom
-    this._player = new Player()
-  }
-
-  get player() {
-    return this._player
   }
 
   get title() {
@@ -39,27 +33,29 @@ module.exports = class Game {
     return exitNames
   }
 
-  applyPlayerChanges(playerChanges) {
+  applyPlayerChanges(playerChanges, playerState) {
     if (!playerChanges) {
-      return
+      return playerState
     }
 
     const attributesToChange = Object.keys(playerChanges);
 
     for (var i = 0; i < attributesToChange.length; i ++) {
       const attributeToChange = attributesToChange[i]
-      this._player[attributeToChange] += playerChanges[attributeToChange]
+      playerState[attributeToChange] += playerChanges[attributeToChange]
     }
+
+    return playerState
   }
 
-  followExit(index) {
+  followExit(index, playerState) {
     try {
       const selectedExit = this.currentRoom.exits[index]
 
-      this.applyPlayerChanges(selectedExit.player)
+      const newPlayerState = this.applyPlayerChanges(selectedExit.player, playerState)
       this.currentRoom = selectedExit.idx
 
-      return selectedExit.message
+      return { exitMessage: selectedExit.message, newPlayerState }
     } catch (error) {
       throw "Bad exit index " + error
     }
