@@ -1,5 +1,7 @@
 # text-adventure
 
+## Note: the `plan` branch contains the final result from the workshop. Check it out!
+
 ## A gentle introduction to functional programming
 
 This repo includes all the resources needed to participate in
