@@ -1,6 +1,7 @@
 const stdin = process.openStdin()
 const inquirer = require('inquirer');
 const gameDef = require('./adventure.json')
+const { pipe } = require('pico-lambda')
 
 const quitCmd = 'Quit'
 const namePrompt = {
@@ -19,19 +20,19 @@ const initialGameState = {
 //generic
 const debug = (...args) => console.log('~~~~~~~~~~~~ DEBUG ', ...args)
 
-function compose() {
-  const funcArgs = arguments
+// function compose() {
+//   const funcArgs = arguments
 
-  return function() {
-    let idx = funcArgs.length - 1
-    let result = funcArgs[idx].apply(this, arguments)
+//   return function() {
+//     let idx = funcArgs.length - 1
+//     let result = funcArgs[idx].apply(this, arguments)
 
-    while(idx--) {
-      result = funcArgs[idx].call(this, result)
-    }
-    return result
-  }
-}
+//     while(idx--) {
+//       result = funcArgs[idx].call(this, result)
+//     }
+//     return result
+//   }
+// }
 
 const inform = (msg) => console.log(msg)
 
