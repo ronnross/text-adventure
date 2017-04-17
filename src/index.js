@@ -1,8 +1,8 @@
 const stdin = process.openStdin()
 const inquirer = require('inquirer');
 const gameDef = require('./adventure.json')
-const { pipe } = require('pico-lambda')
-
+const {pcore} = require('pico-lambda')
+const { compose } = pcore
 const quitCmd = 'Quit'
 const namePrompt = {
   type: 'input',
@@ -20,19 +20,19 @@ const initialGameState = {
 //generic
 const debug = (...args) => console.log('~~~~~~~~~~~~ DEBUG ', ...args)
 
-// function compose() {
-//   const funcArgs = arguments
+function compose2() {
+  const funcArgs = arguments
 
-//   return function() {
-//     let idx = funcArgs.length - 1
-//     let result = funcArgs[idx].apply(this, arguments)
+  return function() {
+    let idx = funcArgs.length - 1
+    let result = funcArgs[idx].apply(this, arguments)
 
-//     while(idx--) {
-//       result = funcArgs[idx].call(this, result)
-//     }
-//     return result
-//   }
-// }
+    while(idx--) {
+      result = funcArgs[idx].call(this, result)
+    }
+    return result
+  }
+}
 
 const inform = (msg) => console.log(msg)
 
@@ -90,21 +90,21 @@ function getPlayerStatus(gameState) {
 }
 
 //engine
-function handleQuit(nothing, gameState) {
+function handleQuit({param: nothing, currGameState: gameState}) {
   return {
     gameState: Object.assign({}, gameState, { shouldQuit: true }),
     msgs: [`Goodbye, ${gameState.name}.`]
   }
 }
 
-function handleNameChange(playerName, gameState) {
+function handleNameChange({param: playerName, currGameState: gameState}) {
   return {
     gameState: Object.assign({}, gameState, { name: playerName }),
     msgs: [`Welcome, ${playerName}!`]
   }
 }
 
-function handleRoomExit(index, gameState) {
+function handleRoomExit({param: index, currGameState: gameState}) {
   try {
     const selectedExit = getCurrentRoom(gameState).exits[index]
 
@@ -183,7 +183,7 @@ function promptUser(prompt, currGameState, ...msgs) {
         addPromptMessages,
         exitOnZeroHP,
         handler
-      )(param, currGameState)
+      )({param, currGameState})
 
       promptUser(buildRoomPrompt(gameState), gameState, ...msgs.filter((msg) => msg !== undefined))
     })
